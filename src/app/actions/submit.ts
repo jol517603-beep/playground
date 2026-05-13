@@ -1,7 +1,15 @@
 'use server'
 
 import { cookies } from 'next/headers'
-import { createServiceClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/supabase'
+
+function createServiceClient() {
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 interface SubmitResult {
   success: boolean
@@ -104,6 +112,48 @@ export async function submitMission(formData: FormData): Promise<SubmitResult> {
   }
 
   return { success: true, newScore }
+}
+
+export async function saveWarCry(warCry: string): Promise<{ success: boolean; error?: string }> {
+  const cookieStore = await cookies()
+  const teamId = cookieStore.get('team_id')?.value
+  if (!teamId) return { success: false, error: 'Not logged in.' }
+
+  const supabase = await createServiceClient()
+  const { error } = await supabase
+    .from('teams')
+    .update({ war_cry: warCry })
+    .eq('id', teamId)
+
+  if (error) return { success: false, error: error.message }
+  return { success: true }
+}
+
+export async function uploadTeamPhoto(
+  photoBlob: Blob
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  const cookieStore = await cookies()
+  const teamId = cookieStore.get('team_id')?.value
+  if (!teamId) return { success: false, error: 'Not logged in.' }
+
+  const supabase = await createServiceClient()
+  const path = `teams/${teamId}/profile.jpg`
+
+  const { error: uploadError } = await supabase.storage
+    .from('submissions')
+    .upload(path, photoBlob, { contentType: 'image/jpeg', upsert: true })
+
+  if (uploadError) return { success: false, error: uploadError.message }
+
+  const { data: urlData } = supabase.storage.from('submissions').getPublicUrl(path)
+  const photoUrl = urlData.publicUrl
+
+  // Save URL to team record.
+  // Requires: ALTER TABLE teams ADD COLUMN team_photo_url TEXT;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await supabase.from('teams').update({ team_photo_url: photoUrl } as any).eq('id', teamId)
+
+  return { success: true, url: photoUrl }
 }
 
 export async function unlockZone(zoneId: string): Promise<{ success: boolean; error?: string }> {

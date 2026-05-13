@@ -4,6 +4,8 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { loginTeam } from '@/app/actions/auth'
 
+const DEMO_CODE = '7TSGP3' // Storm Riders — Team #1
+
 export default function LoginPage() {
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
@@ -14,6 +16,12 @@ export default function LoginPage() {
   const handleChange = (v: string) => {
     setError('')
     setCode(v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))
+  }
+
+  const handleDemoCode = () => {
+    setError('')
+    setCode(DEMO_CODE)
+    inputRef.current?.focus()
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,27 +41,52 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-navy flex items-center justify-center px-4">
+    <div
+      className="min-h-screen flex flex-col items-center justify-start px-4 pt-6 pb-10 overflow-y-auto"
+      style={{ backgroundColor: '#0E1F3A' }}
+    >
+      {/* Branding */}
+      <div className="text-center mb-6 w-full max-w-[380px]">
+        <p className="font-bold text-xs tracking-widest uppercase mb-2" style={{ color: '#FF5A4E' }}>
+          Georgetown, Penang
+        </p>
+        <h1 className="text-white font-black text-4xl leading-tight">
+          The<br />PlayGround
+        </h1>
+        <p className="text-white/40 text-sm mt-1">8 zones · 100 games · 5 museums</p>
+      </div>
+
       <div
         className="w-full max-w-[380px] rounded-xl border-2 border-ink overflow-hidden"
-        style={{ boxShadow: '6px 6px 0 #1A1A1A' }}
+        style={{ boxShadow: '6px 6px 0 rgba(255,255,255,0.08)' }}
       >
-        {/* Header */}
-        <div
-          className="px-6 py-8 text-center relative overflow-hidden"
-          style={{ backgroundColor: '#0E1F3A' }}
-        >
-          <div className="absolute top-3 left-4 w-12 h-12 rounded-full bg-coral opacity-20" />
-          <div className="absolute bottom-2 right-6 w-8 h-8 rounded-full bg-lemon opacity-25" />
-          <p className="text-coral font-bold text-xs tracking-widest uppercase mb-2">Georgetown, Penang</p>
-          <h1 className="text-white font-black text-4xl leading-tight">The<br />PlayGround</h1>
-          <p className="text-white/50 text-sm mt-2">8 zones · 100 games · 5 museums</p>
+        {/* ── Demo Code ── */}
+        <div style={{ backgroundColor: '#FFD43B' }}>
+          <div className="px-4 py-3 flex items-center justify-between gap-3">
+            <div>
+              <p className="font-black text-ink text-sm leading-tight">🎮 DEMO — Try the game</p>
+              <p className="text-ink/60 text-xs mt-0.5">Tap to auto-fill the demo code</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleDemoCode}
+              className="flex-shrink-0 px-4 py-2.5 font-black text-base border-2 border-ink rounded-lg tracking-widest transition-all"
+              style={{
+                backgroundColor: code === DEMO_CODE ? '#0E1F3A' : '#fff',
+                color: code === DEMO_CODE ? '#FFD43B' : '#1A1A1A',
+                boxShadow: '3px 3px 0 #1A1A1A',
+                letterSpacing: '0.12em',
+              }}
+            >
+              {DEMO_CODE}
+            </button>
+          </div>
         </div>
 
-        {/* Form */}
-        <div className="px-6 py-8" style={{ backgroundColor: '#FFF8EE' }}>
-          <p className="text-ink font-black text-lg mb-1">Enter Team Code</p>
-          <p className="text-ink/50 text-sm mb-5">6-character code from your Game Master</p>
+        {/* ── Form ── */}
+        <div className="px-5 py-5" style={{ backgroundColor: '#FFF8EE' }}>
+          <p className="text-ink font-black text-base mb-0.5">Or type your team code</p>
+          <p className="text-ink/50 text-xs mb-4">6-character code from your Game Master</p>
 
           <form onSubmit={handleSubmit}>
             <input
@@ -74,7 +107,9 @@ export default function LoginPage() {
             />
 
             {error && (
-              <p className="text-coral font-bold text-sm text-center mb-3">{error}</p>
+              <p className="font-bold text-sm text-center mb-3" style={{ color: '#FF5A4E' }}>
+                {error}
+              </p>
             )}
 
             <button
