@@ -1,10 +1,18 @@
 'use server'
 
 import { cookies } from 'next/headers'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/supabase'
+
+function getClient() {
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function loginTeam(loginCode: string): Promise<{ error?: string }> {
-  const supabase = await createClient()
+  const supabase = getClient()
 
   const { data: team, error } = await supabase
     .from('teams')
@@ -16,7 +24,6 @@ export async function loginTeam(loginCode: string): Promise<{ error?: string }> 
     return { error: 'Invalid team code. Check with your Game Master.' }
   }
 
-  // Verify the event is live
   const { data: event } = await supabase
     .from('events')
     .select('status')
@@ -24,7 +31,7 @@ export async function loginTeam(loginCode: string): Promise<{ error?: string }> 
     .single()
 
   if (!event || event.status !== 'live') {
-    return { error: 'The event hasn\'t started yet. Stand by!' }
+    return { error: "The event hasn't started yet. Stand by!" }
   }
 
   const cookieStore = await cookies()
@@ -32,7 +39,7 @@ export async function loginTeam(loginCode: string): Promise<{ error?: string }> 
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 12, // 12 hours
+    maxAge: 60 * 60 * 12,
     path: '/',
   })
   cookieStore.set('event_id', team.event_id, {
@@ -58,7 +65,7 @@ export async function getSessionTeam() {
   const eventId = cookieStore.get('event_id')?.value
   if (!teamId || !eventId) return null
 
-  const supabase = await createClient()
+  const supabase = getClient()
   const { data: team } = await supabase
     .from('teams')
     .select('*')

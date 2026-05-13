@@ -44,6 +44,7 @@ export interface Database {
           budget_remaining: number
           photo_count: number
           war_cry: string | null
+          team_photo_url: string | null
           created_at: string
         }
         Insert: {
@@ -56,6 +57,7 @@ export interface Database {
           budget_remaining?: number
           photo_count?: number
           war_cry?: string | null
+          team_photo_url?: string | null
           created_at?: string
         }
         Update: {
@@ -68,6 +70,7 @@ export interface Database {
           budget_remaining?: number
           photo_count?: number
           war_cry?: string | null
+          team_photo_url?: string | null
           created_at?: string
         }
         Relationships: []

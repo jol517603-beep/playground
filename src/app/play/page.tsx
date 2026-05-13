@@ -1,6 +1,14 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabase } from '@supabase/supabase-js'
+import type { Database } from '@/types/supabase'
+
+function createClient() {
+  return createSupabase<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 import PlayClient from './PlayClient'
 
 export default async function PlayPage() {
@@ -10,20 +18,27 @@ export default async function PlayPage() {
 
   if (!teamId || !eventId) redirect('/login')
 
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const [{ data: team }, { data: event }, { data: teamZones }, { data: completions }] =
     await Promise.all([
       supabase.from('teams').select('*').eq('id', teamId).single(),
       supabase.from('events').select('*').eq('id', eventId).single(),
       supabase.from('team_zones').select('zone_id').eq('team_id', teamId),
-      supabase.from('completions').select('game_id, points_awarded').eq('team_id', teamId),
+      supabase
+        .from('completions')
+        .select('game_id, points_awarded, photo_url, submitted_at')
+        .eq('team_id', teamId)
+        .order('submitted_at', { ascending: false }),
     ])
 
   if (!team || !event) redirect('/login')
 
   const unlockedZoneIds = (teamZones ?? []).map((z) => z.zone_id)
   const completedGameIds = (completions ?? []).map((c) => c.game_id)
+  const teamPhotos = (completions ?? [])
+    .map((c) => c.photo_url)
+    .filter((url): url is string => !!url)
 
   return (
     <PlayClient
@@ -31,6 +46,7 @@ export default async function PlayPage() {
       event={event}
       unlockedZoneIds={unlockedZoneIds}
       completedGameIds={completedGameIds}
+      teamPhotos={teamPhotos}
     />
   )
 }

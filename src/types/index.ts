@@ -9,6 +9,8 @@ export interface Zone {
   emoji: string
   lat: number
   lng: number
+  gameArea?: string
+  rules?: string[]
 }
 
 export interface Game {
