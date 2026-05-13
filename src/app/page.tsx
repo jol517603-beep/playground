@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-navy flex items-center justify-center">
@@ -17,12 +19,13 @@ export default function Home() {
           <p className="text-ink/60 text-lg mb-8">
             8 zones · 100 games · 5 museums
           </p>
-          <div
+          <Link
+            href="/login"
             className="inline-block bg-coral text-white font-bold text-sm px-8 py-4 border-2 border-ink"
             style={{ boxShadow: '4px 4px 0px #1A1A1A' }}
           >
             ENTER TEAM CODE
-          </div>
+          </Link>
         </div>
       </div>
     </div>
