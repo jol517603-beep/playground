@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const teamId = request.cookies.get('team_id')?.value
@@ -15,7 +15,6 @@ export function proxy(request: NextRequest) {
 
   // Protect /admin/* routes — checked via GM_EMAILS in the admin layout
   if (pathname.startsWith('/admin')) {
-    // Admin auth is handled by Supabase Auth in the admin layout
     return NextResponse.next()
   }
 
