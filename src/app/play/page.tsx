@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient as createSupabase } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
+import PlayClient from './PlayClient'
 
 function createClient() {
   return createSupabase<Database>(
@@ -9,7 +10,6 @@ function createClient() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 }
-import PlayClient from './PlayClient'
 
 export default async function PlayPage() {
   const cookieStore = await cookies()

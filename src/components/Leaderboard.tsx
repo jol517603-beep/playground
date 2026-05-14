@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Toaster, toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
@@ -14,7 +14,7 @@ interface LeaderboardProps {
 export default function Leaderboard({ eventId, currentTeamId }: LeaderboardProps) {
   const [rows, setRows] = useState<LeaderboardRow[]>([])
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const fetchLeaderboard = useCallback(async () => {
     const { data } = await supabase
@@ -29,7 +29,6 @@ export default function Leaderboard({ eventId, currentTeamId }: LeaderboardProps
   useEffect(() => {
     fetchLeaderboard()
 
-    // Realtime subscription on teams table
     const channel = supabase
       .channel(`leaderboard-${eventId}`)
       .on(
@@ -37,7 +36,6 @@ export default function Leaderboard({ eventId, currentTeamId }: LeaderboardProps
         { event: 'UPDATE', schema: 'public', table: 'teams', filter: `event_id=eq.${eventId}` },
         async (payload) => {
           const updated = payload.new as { name: string; score: number; id: string }
-          // Show toast for other teams scoring
           if (updated.id !== currentTeamId) {
             toast(`🔥 ${updated.name} just scored!`, {
               description: `Score: ${updated.score}`,

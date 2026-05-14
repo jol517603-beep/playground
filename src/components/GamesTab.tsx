@@ -44,7 +44,7 @@ export default function GamesTab({
           <h2 className="text-white font-black text-2xl leading-tight">
             {currentZone.emoji} {currentZone.name}
           </h2>
-          <p className="text-white/70 text-sm font-medium mt-0.5">Lebuh Pantai</p>
+          <p className="text-white/70 text-sm font-medium mt-0.5">{currentZone.label}</p>
         </div>
 
         {/* Game Area */}
