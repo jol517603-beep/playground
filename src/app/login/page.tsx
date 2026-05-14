@@ -29,14 +29,19 @@ export default function LoginPage() {
     if (code.length < 6) return
     setLoading(true)
     setError('')
-    const result = await loginTeam(code)
-    if (result.error) {
-      setError(result.error)
+    try {
+      const result = await loginTeam(code)
+      if (result.error) {
+        setError(result.error)
+        setCode('')
+        inputRef.current?.focus()
+      } else {
+        router.push('/play')
+      }
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
       setLoading(false)
-      setCode('')
-      inputRef.current?.focus()
-    } else {
-      router.push('/play')
     }
   }
 

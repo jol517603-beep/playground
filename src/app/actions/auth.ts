@@ -12,45 +12,49 @@ function getClient() {
 }
 
 export async function loginTeam(loginCode: string): Promise<{ error?: string }> {
-  const supabase = getClient()
+  try {
+    const supabase = getClient()
 
-  const { data: team, error } = await supabase
-    .from('teams')
-    .select('id, event_id, name, team_number, login_code')
-    .eq('login_code', loginCode.toUpperCase())
-    .single()
+    const { data: team, error } = await supabase
+      .from('teams')
+      .select('id, event_id, name, team_number, login_code')
+      .eq('login_code', loginCode.toUpperCase())
+      .single()
 
-  if (error || !team) {
-    return { error: 'Invalid team code. Check with your Game Master.' }
+    if (error || !team) {
+      return { error: 'Invalid team code. Check with your Game Master.' }
+    }
+
+    const { data: event } = await supabase
+      .from('events')
+      .select('status')
+      .eq('id', team.event_id)
+      .single()
+
+    if (!event || event.status !== 'live') {
+      return { error: "The event hasn't started yet. Stand by!" }
+    }
+
+    const cookieStore = await cookies()
+    cookieStore.set('team_id', team.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 12,
+      path: '/',
+    })
+    cookieStore.set('event_id', team.event_id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 12,
+      path: '/',
+    })
+
+    return {}
+  } catch {
+    return { error: 'Server error. Please try again.' }
   }
-
-  const { data: event } = await supabase
-    .from('events')
-    .select('status')
-    .eq('id', team.event_id)
-    .single()
-
-  if (!event || event.status !== 'live') {
-    return { error: "The event hasn't started yet. Stand by!" }
-  }
-
-  const cookieStore = await cookies()
-  cookieStore.set('team_id', team.id, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 12,
-    path: '/',
-  })
-  cookieStore.set('event_id', team.event_id, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 12,
-    path: '/',
-  })
-
-  return {}
 }
 
 export async function logoutTeam(): Promise<void> {
