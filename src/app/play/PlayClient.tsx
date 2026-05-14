@@ -52,9 +52,10 @@ export default function PlayClient({
   )
   const [localWarCry, setLocalWarCry] = useState(initialTeam.war_cry)
 
+  const timerDurationMs = (event.timer_duration_seconds ?? 12600) * 1000
   const eventEndsAt = event.ends_at
     ? new Date(event.ends_at)
-    : new Date(Date.now() + 3 * 3600 * 1000)
+    : new Date(Date.now() + timerDurationMs)
 
   const currentZone =
     zones
@@ -115,6 +116,7 @@ export default function PlayClient({
         }}
         currentZone={currentZone}
         eventEndsAt={eventEndsAt}
+        timerDurationMs={timerDurationMs}
         rank={1}
       />
 

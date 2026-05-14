@@ -7,6 +7,7 @@ interface HeaderProps {
   team: Team
   currentZone: Zone
   eventEndsAt: Date
+  timerDurationMs: number
   rank: number
 }
 
@@ -35,11 +36,10 @@ function useCountdown(endsAt: Date) {
   return timeLeft
 }
 
-export default function Header({ team, currentZone, eventEndsAt, rank }: HeaderProps) {
+export default function Header({ team, currentZone, eventEndsAt, timerDurationMs, rank }: HeaderProps) {
   const timeLeft = useCountdown(eventEndsAt)
-  const totalDuration = 4 * 3600 * 1000
   const remaining = Math.max(0, eventEndsAt.getTime() - Date.now())
-  const progress = Math.min(100, ((totalDuration - remaining) / totalDuration) * 100)
+  const progress = Math.min(100, ((timerDurationMs - remaining) / timerDurationMs) * 100)
 
   return (
     <header
